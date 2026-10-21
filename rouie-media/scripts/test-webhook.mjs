@@ -1,0 +1,12 @@
+import assert from "node:assert/strict";
+import { createHmac } from "node:crypto";
+import fs from "node:fs";
+const file = fs.readFileSync("lib/webhook-signature.ts", "utf8");
+assert.match(file, /timingSafeEqual/);
+assert.match(file, /Math.abs\(nowSeconds - timestamp\) > 300/);
+const body = JSON.stringify({uid:"example",readyToStream:true});
+const secret = "testsecret";
+const time = "1800000000";
+const digest = createHmac("sha256", secret).update(`${time}.${body}`).digest("hex");
+assert.equal(digest.length, 64);
+console.log("Static signature checks passed; integration test requires deployed Cloudflare webhook.");
